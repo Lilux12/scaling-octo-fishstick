@@ -11,7 +11,15 @@ base {
 }
 
 repositories {
-	// Add repositories here if needed
+	mavenCentral()
+	maven {
+		name = "Fabric"
+		url = "https://maven.fabricmc.net/"
+	}
+	maven {
+		name = "Mojang"
+		url = "https://libraries.minecraft.net/"
+	}
 }
 
 loom {
