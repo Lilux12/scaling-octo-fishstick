@@ -1,7 +1,5 @@
 name: Build mod
 
-# Собирается автоматически при каждом пуше в ветку main/master,
-# а также вручную кнопкой "Run workflow" на вкладке Actions.
 on:
   push:
     branches: [ main, master ]
@@ -20,13 +18,38 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Resolve latest Fabric toolchain versions
+        run: |
+          set -e
+          MC_VERSION=$(grep '^minecraft_version=' gradle.properties | cut -d'=' -f2)
+          echo "Minecraft version: $MC_VERSION"
+
+          LOADER=$(curl -s "https://meta.fabricmc.net/v2/versions/loader/$MC_VERSION" | jq -r '.[0].loader.version')
+          YARN=$(curl -s "https://meta.fabricmc.net/v2/versions/yarn/$MC_VERSION" | jq -r '.[0].version')
+          FAPI=$(curl -s "https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml" \
+                 | grep -oP "(?<=<version>)[^<]*\+${MC_VERSION}(?=</version>)" | tail -n1)
+
+          echo "loader=$LOADER yarn=$YARN fabric_api=$FAPI"
+
+          if [ -z "$LOADER" ] || [ -z "$YARN" ] || [ -z "$FAPI" ]; then
+            echo "::error::Не удалось получить одну из версий из Fabric Meta API."
+            exit 1
+          fi
+
+          sed -i "s/^loader_version=.*/loader_version=$LOADER/" gradle.properties
+          sed -i "s/^yarn_mappings=.*/yarn_mappings=$YARN/" gradle.properties
+          sed -i "s/^fabric_version=.*/fabric_version=$FAPI/" gradle.properties
+
+          echo "----- gradle.properties -----"
+          cat gradle.properties
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.10'
+          gradle-version: 'current'
 
       - name: Build with Gradle
-        run: gradle clean build --stacktrace
+        run: gradle build --stacktrace
 
       - name: Upload built jar
         uses: actions/upload-artifact@v4
