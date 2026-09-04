@@ -7,6 +7,9 @@ pluginManagement {
 		mavenCentral()
 		gradlePluginPortal()
 	}
+	plugins {
+		id 'fabric-loom' version '0.22.1'
+	}
 }
 
 rootProject.name = 'autosorter'
