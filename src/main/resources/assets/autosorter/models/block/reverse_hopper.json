@@ -1,0 +1,9 @@
+{
+	"parent": "minecraft:block/hopper",
+	"textures": {
+		"particle": "minecraft:block/hopper_outside",
+		"1": "minecraft:block/hopper_inside",
+		"3": "minecraft:block/hopper_outside",
+		"4": "minecraft:block/hopper_top"
+	}
+}

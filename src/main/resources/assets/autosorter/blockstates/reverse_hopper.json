@@ -1,0 +1,5 @@
+{
+	"variants": {
+		"": { "model": "autosorter:block/reverse_hopper" }
+	}
+}

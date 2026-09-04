@@ -1,0 +1,10 @@
+{
+	"block.autosorter.auto_sorter": "Авто-сортировщик",
+	"block.autosorter.reverse_hopper": "Обратная воронка",
+	"itemGroup.autosorter": "Auto Sorter",
+	"gui.autosorter.tab_sorting": "Сортировка",
+	"gui.autosorter.tab_settings": "Настройки",
+	"gui.autosorter.use_held_item": "Взять из руки",
+	"gui.autosorter.sorting_hint": "Кладите предметы сюда — они сами разойдутся по привязанным сундукам",
+	"gui.autosorter.settings_hint": "Клик — привязать/отвязать сундук. \"Взять из руки\" — назначить фильтр по предмету"
+}

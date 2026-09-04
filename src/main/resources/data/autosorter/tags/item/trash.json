@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:rotten_flesh",
+    "minecraft:gunpowder",
+    "minecraft:poisonous_potato",
+    "minecraft:spider_eye",
+    "minecraft:string",
+    "minecraft:bone",
+    "minecraft:cobweb",
+    "minecraft:flint"
+  ]
+}

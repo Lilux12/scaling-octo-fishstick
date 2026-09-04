@@ -1,0 +1,10 @@
+{
+	"block.autosorter.auto_sorter": "Auto Sorter",
+	"block.autosorter.reverse_hopper": "Reverse Hopper",
+	"itemGroup.autosorter": "Auto Sorter",
+	"gui.autosorter.tab_sorting": "Sorting",
+	"gui.autosorter.tab_settings": "Settings",
+	"gui.autosorter.use_held_item": "Use held item",
+	"gui.autosorter.sorting_hint": "Drop items here - they'll route to linked chests",
+	"gui.autosorter.settings_hint": "Click = link/unlink chest. \"Use held item\" sets the filter"
+}
