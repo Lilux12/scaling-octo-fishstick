@@ -26,7 +26,7 @@ jobs:
           gradle-version: '8.10'
 
       - name: Build with Gradle
-        run: gradle build --stacktrace
+        run: gradle clean build --stacktrace
 
       - name: Upload built jar
         uses: actions/upload-artifact@v4
