@@ -1,15 +1,10 @@
 pluginManagement {
 	repositories {
-		gradlePluginPortal()
 		maven {
 			name = 'Fabric'
 			url = 'https://maven.fabricmc.net/'
 		}
 		mavenCentral()
-	}
-	plugins {
-		id 'fabric-loom' version '0.22.1'
+		gradlePluginPortal()
 	}
 }
-
-rootProject.name = 'autosorter'
