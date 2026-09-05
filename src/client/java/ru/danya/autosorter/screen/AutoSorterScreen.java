@@ -126,7 +126,12 @@ public class AutoSorterScreen extends HandledScreen<AutoSorterScreenHandler> {
 		int x = (width - backgroundWidth) / 2;
 		int y = (height - backgroundHeight) / 2;
 		context.fill(x, y, x + backgroundWidth, y + backgroundHeight, 0xFF8B8B8B);
-		context.drawBorder(x, y, backgroundWidth, backgroundHeight, 0xFF373737);
+		// drawBorder убрали/переименовали в этой версии — рисуем рамку вручную 4 полосками.
+		int borderColor = 0xFF373737;
+		context.fill(x, y, x + backgroundWidth, y + 1, borderColor); // верх
+		context.fill(x, y + backgroundHeight - 1, x + backgroundWidth, y + backgroundHeight, borderColor); // низ
+		context.fill(x, y, x + 1, y + backgroundHeight, borderColor); // лево
+		context.fill(x + backgroundWidth - 1, y, x + backgroundWidth, y + backgroundHeight, borderColor); // право
 	}
 
 	@Override
