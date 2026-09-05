@@ -42,7 +42,7 @@ public class ReverseHopperBlock extends BlockWithEntity {
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(net.minecraft.world.World world, BlockState state,
 			BlockEntityType<T> type) {
-		return world.isClient ? null : checkType(type, ModBlockEntities.REVERSE_HOPPER, ReverseHopperBlockEntity::serverTick);
+		return world.isClient() ? null : checkType(type, ModBlockEntities.REVERSE_HOPPER, ReverseHopperBlockEntity::serverTick);
 	}
 
 	@Nullable

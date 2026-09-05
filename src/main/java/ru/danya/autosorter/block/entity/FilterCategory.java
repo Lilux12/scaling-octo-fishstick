@@ -1,17 +1,21 @@
 package ru.danya.autosorter.block.entity;
 
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.BlockItem;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.item.ToolItem;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 
 /**
  * Категории для быстрого фильтра ("вместо конкретного предмета можно
  * выбрать категорию"). Список пополняемый — можно добавлять свои.
+ *
+ * ВАЖНО: начиная с относительно недавних версий Minecraft (компонентная
+ * система предметов) отдельных классов ArmorItem/ToolItem больше нет —
+ * снаряжение определяется через компоненты (DataComponentTypes.EQUIPPABLE,
+ * .TOOL) и теги, а не через instanceof.
  */
 public enum FilterCategory {
 	WOOD("Дерево"),
@@ -26,35 +30,33 @@ public enum FilterCategory {
 		this.displayName = displayName;
 	}
 
+	private static final TagKey<Item> TRASH_TAG =
+			TagKey.of(RegistryKeys.ITEM, Identifier.of("autosorter", "trash"));
+
 	public static boolean matches(FilterCategory category, ItemStack stack) {
 		if (stack.isEmpty() || category == null || category == NONE) return false;
-		Item item = stack.getItem();
 		return switch (category) {
-			case WOOD -> item.getBuiltInRegistryHolder().isIn(ItemTags.LOGS)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.PLANKS)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.WOODEN_SLABS)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.WOODEN_STAIRS)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.WOODEN_FENCES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.WOODEN_DOORS)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.SAPLINGS)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.LEAVES);
-			case ORES -> item.getBuiltInRegistryHolder().isIn(ItemTags.COAL_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.IRON_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.GOLD_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.DIAMOND_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.EMERALD_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.LAPIS_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.REDSTONE_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.COPPER_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.RAW_IRON_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.RAW_GOLD_ORES)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.RAW_COPPER_ORES);
-			case GEAR -> item instanceof ArmorItem || item instanceof ToolItem || item instanceof RangedWeaponItem
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.SWORDS)
-					|| item.getBuiltInRegistryHolder().isIn(ItemTags.TRIMMABLE_ARMOR);
-			case TRASH -> item.getBuiltInRegistryHolder().isIn(
-					net.minecraft.registry.tag.TagKey.of(
-							net.minecraft.registry.RegistryKeys.ITEM, Identifier.of("autosorter", "trash")));
+			case WOOD -> stack.isIn(ItemTags.LOGS)
+					|| stack.isIn(ItemTags.PLANKS)
+					|| stack.isIn(ItemTags.WOODEN_SLABS)
+					|| stack.isIn(ItemTags.WOODEN_STAIRS)
+					|| stack.isIn(ItemTags.WOODEN_FENCES)
+					|| stack.isIn(ItemTags.WOODEN_DOORS)
+					|| stack.isIn(ItemTags.SAPLINGS)
+					|| stack.isIn(ItemTags.LEAVES);
+			case ORES -> stack.isIn(ItemTags.COAL_ORES)
+					|| stack.isIn(ItemTags.IRON_ORES)
+					|| stack.isIn(ItemTags.GOLD_ORES)
+					|| stack.isIn(ItemTags.DIAMOND_ORES)
+					|| stack.isIn(ItemTags.EMERALD_ORES)
+					|| stack.isIn(ItemTags.LAPIS_ORES)
+					|| stack.isIn(ItemTags.REDSTONE_ORES)
+					|| stack.isIn(ItemTags.COPPER_ORES);
+			case GEAR -> stack.contains(DataComponentTypes.EQUIPPABLE)
+					|| stack.contains(DataComponentTypes.TOOL)
+					|| stack.isIn(ItemTags.SWORDS)
+					|| stack.isIn(ItemTags.TRIMMABLE_ARMOR);
+			case TRASH -> stack.isIn(TRASH_TAG);
 			default -> false;
 		};
 	}

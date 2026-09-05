@@ -13,6 +13,12 @@ import ru.danya.autosorter.block.entity.FilterCategory;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Заметка под 1.21.11: ServerPlayerEntity.getServer()/getWorld() были
+ * убраны/переименованы. Вместо этого используем context.server() (даёт
+ * сам колбэк ServerPlayNetworking) и player.getEntityWorld() (новое имя
+ * метода получения мира сущности).
+ */
 public class ModNetworking {
 
 	public static void registerPayloadTypes() {
@@ -27,12 +33,12 @@ public class ModNetworking {
 		registerPayloadTypes();
 
 		ServerPlayNetworking.registerGlobalReceiver(ModPayloads.RequestChestListC2S.ID, (payload, context) -> {
-			ServerPlayerEntity player = context.player();
-			player.getServer().execute(() -> {
-				BlockEntity be = player.getWorld().getBlockEntity(payload.sorterPos());
+			context.server().execute(() -> {
+				ServerPlayerEntity player = context.player();
+				BlockEntity be = player.getEntityWorld().getBlockEntity(payload.sorterPos());
 				if (!(be instanceof AutoSorterBlockEntity sorter)) return;
 
-				List<BlockPos> nearby = sorter.scanNearbyContainers(player.getWorld());
+				List<BlockPos> nearby = sorter.scanNearbyContainers(player.getEntityWorld());
 				List<ModPayloads.ChestEntry> entries = new ArrayList<>();
 				for (BlockPos p : nearby) {
 					ChestLink existing = null;
@@ -42,7 +48,7 @@ public class ModNetworking {
 							break;
 						}
 					}
-					BlockEntity targetBe = player.getWorld().getBlockEntity(p);
+					BlockEntity targetBe = player.getEntityWorld().getBlockEntity(p);
 					String label = targetBe != null
 							? targetBe.getCachedState().getBlock().getName().getString() + "  [" + p.getX() + "," + p.getY() + "," + p.getZ() + "]"
 							: ("? [" + p.getX() + "," + p.getY() + "," + p.getZ() + "]");
@@ -60,9 +66,9 @@ public class ModNetworking {
 		});
 
 		ServerPlayNetworking.registerGlobalReceiver(ModPayloads.ToggleLinkC2S.ID, (payload, context) -> {
-			ServerPlayerEntity player = context.player();
-			player.getServer().execute(() -> {
-				BlockEntity be = player.getWorld().getBlockEntity(payload.sorterPos());
+			context.server().execute(() -> {
+				ServerPlayerEntity player = context.player();
+				BlockEntity be = player.getEntityWorld().getBlockEntity(payload.sorterPos());
 				if (!(be instanceof AutoSorterBlockEntity sorter)) return;
 
 				boolean alreadyLinked = false;
@@ -81,9 +87,9 @@ public class ModNetworking {
 		});
 
 		ServerPlayNetworking.registerGlobalReceiver(ModPayloads.SetFilterItemC2S.ID, (payload, context) -> {
-			ServerPlayerEntity player = context.player();
-			player.getServer().execute(() -> {
-				BlockEntity be = player.getWorld().getBlockEntity(payload.sorterPos());
+			context.server().execute(() -> {
+				ServerPlayerEntity player = context.player();
+				BlockEntity be = player.getEntityWorld().getBlockEntity(payload.sorterPos());
 				if (!(be instanceof AutoSorterBlockEntity sorter)) return;
 
 				// В качестве образца берём предмет, который игрок держит в руке.
@@ -95,15 +101,16 @@ public class ModNetworking {
 		});
 
 		ServerPlayNetworking.registerGlobalReceiver(ModPayloads.SetFilterCategoryC2S.ID, (payload, context) -> {
-			ServerPlayerEntity player = context.player();
-			player.getServer().execute(() -> {
-				BlockEntity be = player.getWorld().getBlockEntity(payload.sorterPos());
+			context.server().execute(() -> {
+				ServerPlayerEntity player = context.player();
+				BlockEntity be = player.getEntityWorld().getBlockEntity(payload.sorterPos());
 				if (!(be instanceof AutoSorterBlockEntity sorter)) return;
 				sorter.addOrUpdateLink(payload.targetPos());
 				sorter.setFilterCategory(payload.targetPos(), payload.category());
 			});
 		});
 	}
+
 	// Регистрация клиентского приёмника вынесена в клиентский исходный набор,
 	// см. ru.danya.autosorter.network.ClientNetworking (src/client/...),
 	// т.к. main-сорсет не может ссылаться на клиентские классы (AutoSorterScreen).

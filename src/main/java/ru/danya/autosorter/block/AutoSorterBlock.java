@@ -8,8 +8,9 @@ import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.ItemScatterer;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventories;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -25,12 +26,11 @@ import ru.danya.autosorter.block.entity.ModBlockEntities;
  * Блок "Авто-сортировщик". Работает как контейнер со своим GUI.
  * Внутри: буфер входящих предметов + список привязанных сундуков с фильтрами.
  *
- * ВАЖНО про getCodec(): в 1.21.x BlockWithEntity требует MapCodec для
- * сериализации блока (используется дата-генератором/сетью блок-стейтов).
- * Если сборка ругается на абстрактный метод — добавь:
- *   public static final MapCodec<AutoSorterBlock> CODEC = createCodec(AutoSorterBlock::new);
- * и верни CODEC ниже. Оставлено как заглушка, т.к. точная сигнатура
- * отличается между билдами Yarn-маппингов 1.21.x.
+ * Заметки под 1.21.11:
+ *  - World.isClient стало приватным полем — используем world.isClient().
+ *  - onStateReplaced теперь принимает ServerWorld (а не просто World).
+ *  - Inventories.dropContents с таким сигнатурой отсутствует — предметы
+ *    высыпаем вручную через ItemScatterer.
  */
 public class AutoSorterBlock extends BlockWithEntity {
 
@@ -58,7 +58,7 @@ public class AutoSorterBlock extends BlockWithEntity {
 	@Override
 	protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player,
 			BlockHitResult hit) {
-		if (!world.isClient) {
+		if (!world.isClient()) {
 			BlockEntity be = world.getBlockEntity(pos);
 			if (be instanceof AutoSorterBlockEntity sorter) {
 				player.openHandledScreen(sorter);
@@ -68,10 +68,12 @@ public class AutoSorterBlock extends BlockWithEntity {
 	}
 
 	@Override
-	protected void onStateReplaced(BlockState state, World world, BlockPos pos, boolean moved) {
+	protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
 		BlockEntity be = world.getBlockEntity(pos);
 		if (be instanceof AutoSorterBlockEntity sorter) {
-			Inventories.dropContents(world, pos, sorter.getInputBuffer());
+			for (int i = 0; i < sorter.getInputBuffer().size(); i++) {
+				ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), sorter.getInputBuffer().getStack(i));
+			}
 			world.updateComparators(pos, this);
 		}
 		super.onStateReplaced(state, world, pos, moved);
@@ -86,7 +88,7 @@ public class AutoSorterBlock extends BlockWithEntity {
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state,
 			BlockEntityType<T> type) {
-		return world.isClient ? null : checkType(type, ModBlockEntities.AUTO_SORTER, AutoSorterBlockEntity::serverTick);
+		return world.isClient() ? null : checkType(type, ModBlockEntities.AUTO_SORTER, AutoSorterBlockEntity::serverTick);
 	}
 
 	@Nullable

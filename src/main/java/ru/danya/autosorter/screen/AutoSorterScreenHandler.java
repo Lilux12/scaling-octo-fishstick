@@ -35,7 +35,8 @@ public class AutoSorterScreenHandler extends ScreenHandler {
 	public AutoSorterScreenHandler(int syncId, PlayerInventory playerInventory, BlockPos pos) {
 		super(ModScreenHandlers.AUTO_SORTER_SCREEN_HANDLER, syncId);
 		this.sorterPos = pos;
-		BlockEntity be = playerInventory.player.getWorld().getBlockEntity(pos);
+		// getWorld() -> getEntityWorld() (переименовано в новых версиях Minecraft)
+		BlockEntity be = playerInventory.player.getEntityWorld().getBlockEntity(pos);
 		this.blockEntity = be instanceof AutoSorterBlockEntity sorter ? sorter : null;
 		this.inventory = this.blockEntity != null ? this.blockEntity.getInputBuffer() : new net.minecraft.inventory.SimpleInventory(9);
 		inventory.onOpen(playerInventory.player);

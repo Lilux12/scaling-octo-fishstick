@@ -8,10 +8,10 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -126,9 +126,7 @@ public class AutoSorterBlockEntity extends BlockEntity implements ExtendedScreen
 					stack.decrement(moved);
 					be.inputBuffer.setStack(slot, stack);
 					be.markDirty();
-					if (targetBe instanceof net.minecraft.block.entity.BlockEntity tbe) {
-						tbe.markDirty();
-					}
+					targetBe.markDirty();
 					break; // предмет пристроен, переходим к следующему слоту
 				}
 			}
@@ -182,27 +180,28 @@ public class AutoSorterBlockEntity extends BlockEntity implements ExtendedScreen
 	}
 
 	// ---------------------------------------------------------------
-	// Сохранение / загрузка
+	// Сохранение / загрузка (новая View-система вместо NbtCompound напрямую)
 	// ---------------------------------------------------------------
 	@Override
-	protected void writeNbt(NbtCompound nbt, net.minecraft.registry.RegistryWrapper.WrapperLookup registries) {
-		super.writeNbt(nbt, registries);
-		nbt.put("InputBuffer", inputBuffer.toNbtList(registries));
-		NbtList linksNbt = new NbtList();
-		for (ChestLink link : links) {
-			linksNbt.add(link.writeNbt(registries));
+	protected void writeData(WriteView view) {
+		super.writeData(view);
+		List<ItemStack> bufferList = new ArrayList<>();
+		for (int i = 0; i < inputBuffer.size(); i++) {
+			bufferList.add(inputBuffer.getStack(i));
 		}
-		nbt.put("Links", linksNbt);
+		view.put("Data", SorterData.CODEC, new SorterData(new ArrayList<>(links), bufferList));
 	}
 
 	@Override
-	protected void readNbt(NbtCompound nbt, net.minecraft.registry.RegistryWrapper.WrapperLookup registries) {
-		super.readNbt(nbt, registries);
-		inputBuffer.readNbtList(nbt.getList("InputBuffer", 10), registries);
-		links.clear();
-		NbtList linksNbt = nbt.getList("Links", 10);
-		for (int i = 0; i < linksNbt.size(); i++) {
-			links.add(ChestLink.readNbt(linksNbt.getCompound(i), registries));
-		}
+	protected void readData(ReadView view) {
+		super.readData(view);
+		view.read("Data", SorterData.CODEC).ifPresent(data -> {
+			links.clear();
+			links.addAll(data.links());
+			List<ItemStack> buffer = data.buffer();
+			for (int i = 0; i < inputBuffer.size() && i < buffer.size(); i++) {
+				inputBuffer.setStack(i, buffer.get(i));
+			}
+		});
 	}
 }
